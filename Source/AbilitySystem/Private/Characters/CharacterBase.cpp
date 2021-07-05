@@ -46,6 +46,11 @@ void ACharacterBase::AcquireAblity(TSubclassOf<UGameplayAbility> AbilityToAcquir
 
 void ACharacterBase::OnHealthChanged(float Health, float MaxHealth) 
 {
+	if (Health <= 0.f && !bIsDead) 
+	{
+		bIsDead = true;
+		BP_Die();
+	}
 	// Call our Blueprint version of his function
 	BP_OnHealthChanged(Health, MaxHealth);
 }
