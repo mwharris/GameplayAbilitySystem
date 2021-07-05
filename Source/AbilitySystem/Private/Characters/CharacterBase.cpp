@@ -1,5 +1,8 @@
 #include "Characters/CharacterBase.h"
+#include "AIController.h"
 #include "AttributeSets/AttributeSetBase.h"
+#include "BrainComponent.h"
+#include "GameFramework/PlayerController.h"
 
 ACharacterBase::ACharacterBase()
 {
@@ -13,6 +16,8 @@ ACharacterBase::ACharacterBase()
 void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
+	// Identify us as either the Player or the Enemy
+	AutoDetermineTeamIdByControllerType();
 	// Subscribe to AttributeSetBase::FOnHealthChangeDelegate
 	AttributeSetComp->OnHealthChange.AddDynamic(this, &ACharacterBase::OnHealthChanged);
 }
@@ -49,10 +54,42 @@ void ACharacterBase::OnHealthChanged(float Health, float MaxHealth)
 	if (Health <= 0.f && !bIsDead) 
 	{
 		bIsDead = true;
+		Dead();
 		BP_Die();
 	}
 	// Call our Blueprint version of his function
 	BP_OnHealthChanged(Health, MaxHealth);
+}
+
+void ACharacterBase::Dead() 
+{
+	if (APlayerController* PC = Cast<APlayerController>(GetController())) 
+	{
+		PC->DisableInput(PC);
+		return;
+	}
+	else if (AAIController* AIC = Cast<AAIController>(GetController()))
+	{
+		AIC->GetBrainComponent()->StopLogic("Dead");
+		return;
+	}
+}
+
+void ACharacterBase::AutoDetermineTeamIdByControllerType() 
+{
+	if (GetController() && GetController()->IsPlayerController()) 
+	{
+		TeamId = 0;
+	}
+	else
+	{
+		TeamId = 1;
+	}
+}
+
+bool ACharacterBase::IsOtherHostile(ACharacterBase* Other) 
+{
+	return TeamId != Other->GetTeamId();	
 }
 
 UAbilitySystemComponent* ACharacterBase::GetAbilitySystemComponent() const
