@@ -18,8 +18,10 @@ void ACharacterBase::BeginPlay()
 	Super::BeginPlay();
 	// Identify us as either the Player or the Enemy
 	AutoDetermineTeamIdByControllerType();
-	// Subscribe to AttributeSetBase::FOnHealthChangeDelegate
+	// Subscribe to AttributeSetBase event delegates
 	AttributeSetComp->OnHealthChange.AddDynamic(this, &ACharacterBase::OnHealthChanged);
+	AttributeSetComp->OnManaChange.AddDynamic(this, &ACharacterBase::OnManaChanged);
+	AttributeSetComp->OnStrengthChange.AddDynamic(this, &ACharacterBase::OnStrengthChanged);
 }
 
 void ACharacterBase::Tick(float DeltaTime)
@@ -59,6 +61,16 @@ void ACharacterBase::OnHealthChanged(float Health, float MaxHealth)
 	}
 	// Call our Blueprint version of his function
 	BP_OnHealthChanged(Health, MaxHealth);
+}
+
+void ACharacterBase::OnManaChanged(float Mana, float MaxMana) 
+{
+	BP_OnManaChanged(Mana, MaxMana);
+}
+
+void ACharacterBase::OnStrengthChanged(float Strength, float MaxStrength) 
+{
+	BP_OnStrengthChanged(Strength, MaxStrength);
 }
 
 void ACharacterBase::Dead() 

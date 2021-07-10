@@ -19,8 +19,20 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Set Base")
 	FGameplayAttributeData MaxHealth;
 
-	void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Set Base")
+	FGameplayAttributeData Mana;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Set Base")
+	FGameplayAttributeData MaxMana;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Set Base")
+	FGameplayAttributeData Strength;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attribute Set Base")
+	FGameplayAttributeData MaxStrength;
+
 	FOnHealthChangeDelegate OnHealthChange;
+	FOnHealthChangeDelegate OnManaChange;
+	FOnHealthChangeDelegate OnStrengthChange;
+
+	void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
 };

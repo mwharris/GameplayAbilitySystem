@@ -3,25 +3,43 @@
 #include "GameplayEffectExtension.h"
 #include "GameplayEffectTypes.h"
 
-UAttributeSetBase::UAttributeSetBase() : Health(200.f), MaxHealth(200.f)
+UAttributeSetBase::UAttributeSetBase() : 
+    Health(200.f), MaxHealth(200.f), 
+    Mana(100.f), MaxMana(150.f), 
+    Strength(250.f), MaxStrength(250.f)
 {
 	
 }
 
 void UAttributeSetBase::PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) 
 {
-    // Get the FProperty that the GameplayEffect has modified
-    FProperty* DataProperty = Data.EvaluatedData.Attribute.GetUProperty();
-    // Get the FProperty representing the Health property of the UAttributeSetBase class
-    FProperty* HealthProperty = FindFieldChecked<FProperty>(UAttributeSetBase::StaticClass(), GET_MEMBER_NAME_CHECKED(UAttributeSetBase, Health));
-    // Check if the modified value is the Health property
-    if (DataProperty == HealthProperty)
+    // Check if FProperty that the GameplayEffect modified is Health
+    if (Data.EvaluatedData.Attribute.GetUProperty() == FindFieldChecked<FProperty>(UAttributeSetBase::StaticClass(), GET_MEMBER_NAME_CHECKED(UAttributeSetBase, Health)))
     {
         // Make sure our HP doesn't go below 0
         Health.SetCurrentValue(FMath::Clamp(Health.GetCurrentValue(), 0.f, MaxHealth.GetCurrentValue()));
         Health.SetBaseValue(FMath::Clamp(Health.GetBaseValue(), 0.f, MaxHealth.GetBaseValue()));
         // Broadcast to anyone listening for Health Changed events
         OnHealthChange.Broadcast(Health.GetCurrentValue(), MaxHealth.GetCurrentValue());
-        UE_LOG(LogTemp, Warning, TEXT("Ouch, I took damage, my HP is: %f"), Health.GetCurrentValue());
+    }
+
+    // Check if FProperty that the GameplayEffect modified is Mana
+    if (Data.EvaluatedData.Attribute.GetUProperty() == FindFieldChecked<FProperty>(UAttributeSetBase::StaticClass(), GET_MEMBER_NAME_CHECKED(UAttributeSetBase, Mana)))
+    {
+        // Make sure our Mana doesn't go below 0
+        Mana.SetCurrentValue(FMath::Clamp(Mana.GetCurrentValue(), 0.f, MaxMana.GetCurrentValue()));
+        Mana.SetBaseValue(FMath::Clamp(Mana.GetBaseValue(), 0.f, MaxMana.GetBaseValue()));
+        // Broadcast to anyone listening for Health Changed events
+        OnManaChange.Broadcast(Mana.GetCurrentValue(), MaxMana.GetCurrentValue());
+    }
+
+    // Check if FProperty that the GameplayEffect modified is Strength
+    if (Data.EvaluatedData.Attribute.GetUProperty() == FindFieldChecked<FProperty>(UAttributeSetBase::StaticClass(), GET_MEMBER_NAME_CHECKED(UAttributeSetBase, Strength)))
+    {
+        // Make sure our Strength doesn't go below 0
+        Strength.SetCurrentValue(FMath::Clamp(Strength.GetCurrentValue(), 0.f, MaxStrength.GetCurrentValue()));
+        Strength.SetBaseValue(FMath::Clamp(Strength.GetBaseValue(), 0.f, MaxStrength.GetBaseValue()));
+        // Broadcast to anyone listening for Health Changed events
+        OnStrengthChange.Broadcast(Strength.GetCurrentValue(), MaxStrength.GetCurrentValue());
     }
 }
