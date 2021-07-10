@@ -18,6 +18,8 @@ void ACharacterBase::BeginPlay()
 	Super::BeginPlay();
 	// Identify us as either the Player or the Enemy
 	AutoDetermineTeamIdByControllerType();
+	// Make sure to add our FullHealthTag when we start with Full Health
+	AddGameplayTag(FullHealthTag);
 	// Subscribe to AttributeSetBase event delegates
 	AttributeSetComp->OnHealthChange.AddDynamic(this, &ACharacterBase::OnHealthChanged);
 	AttributeSetComp->OnManaChange.AddDynamic(this, &ACharacterBase::OnManaChanged);
@@ -49,6 +51,17 @@ void ACharacterBase::AcquireAblity(TSubclassOf<UGameplayAbility> AbilityToAcquir
 	// Argument 1 is OwnerActor (the actor that logically owns the component)
 	// Argument 2 is AvatarActor (what physical actor we are effecting in the world)
 	AbilitySystemComp->InitAbilityActorInfo(this, this);
+}
+
+void ACharacterBase::AddGameplayTag(FGameplayTag& TagToAdd) 
+{
+	AbilitySystemComp->AddLooseGameplayTag(TagToAdd);
+	AbilitySystemComp->SetTagMapCount(TagToAdd, 1);
+}
+
+void ACharacterBase::RemoveGameplayTag(FGameplayTag& TagToRemove) 
+{
+	AbilitySystemComp->RemoveLooseGameplayTag(TagToRemove);
 }
 
 void ACharacterBase::OnHealthChanged(float Health, float MaxHealth) 

@@ -2,10 +2,11 @@
 #include "AttributeSet.h"
 #include "GameplayEffectExtension.h"
 #include "GameplayEffectTypes.h"
+#include "AbilitySystem/Public/Characters/CharacterBase.h"
 
 UAttributeSetBase::UAttributeSetBase() : 
     Health(200.f), MaxHealth(200.f), 
-    Mana(100.f), MaxMana(150.f), 
+    Mana(100.f), MaxMana(100.f), 
     Strength(250.f), MaxStrength(250.f)
 {
 	
@@ -21,6 +22,16 @@ void UAttributeSetBase::PostGameplayEffectExecute(const struct FGameplayEffectMo
         Health.SetBaseValue(FMath::Clamp(Health.GetBaseValue(), 0.f, MaxHealth.GetBaseValue()));
         // Broadcast to anyone listening for Health Changed events
         OnHealthChange.Broadcast(Health.GetCurrentValue(), MaxHealth.GetCurrentValue());
+        // Add/Remove our Full Health Tag appropriately
+        if (OwningCharacter == nullptr) { GetOwningCharacterRef(); }
+        if (Health.GetCurrentValue() == MaxHealth.GetCurrentValue()) 
+        {
+            OwningCharacter->AddGameplayTag(OwningCharacter->FullHealthTag);
+        }
+        else 
+        {
+            OwningCharacter->RemoveGameplayTag(OwningCharacter->FullHealthTag);
+        }
     }
 
     // Check if FProperty that the GameplayEffect modified is Mana
@@ -41,5 +52,15 @@ void UAttributeSetBase::PostGameplayEffectExecute(const struct FGameplayEffectMo
         Strength.SetBaseValue(FMath::Clamp(Strength.GetBaseValue(), 0.f, MaxStrength.GetBaseValue()));
         // Broadcast to anyone listening for Health Changed events
         OnStrengthChange.Broadcast(Strength.GetCurrentValue(), MaxStrength.GetCurrentValue());
+    }
+}
+
+void UAttributeSetBase::GetOwningCharacterRef() 
+{
+	if (OwningCharacter != nullptr) return;
+    OwningCharacter = Cast<ACharacterBase>(GetOwningActor());
+    if (OwningCharacter == nullptr) 
+    {
+        UE_LOG(LogTemp, Error, TEXT("Couldn't find Owning Character!"));
     }
 }

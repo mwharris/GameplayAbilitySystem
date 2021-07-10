@@ -35,4 +35,8 @@ public:
 
 	void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 
+private:
+	class ACharacterBase* OwningCharacter = nullptr;
+	void GetOwningCharacterRef();
+
 };
