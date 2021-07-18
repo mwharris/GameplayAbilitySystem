@@ -69,7 +69,7 @@ void ACharacterBase::OnHealthChanged(float Health, float MaxHealth)
 	if (Health <= 0.f && !bIsDead) 
 	{
 		bIsDead = true;
-		Dead();
+		DisableInputControl();
 		BP_Die();
 	}
 	// Call our Blueprint version of his function
@@ -86,7 +86,13 @@ void ACharacterBase::OnStrengthChanged(float Strength, float MaxStrength)
 	BP_OnStrengthChanged(Strength, MaxStrength);
 }
 
-void ACharacterBase::Dead() 
+void ACharacterBase::HitStun(float Duration) 
+{
+	DisableInputControl();
+	GetWorldTimerManager().SetTimer(StunTimerHandle, this, &ACharacterBase::EnableInputControl, Duration, false);
+}
+
+void ACharacterBase::DisableInputControl() 
 {
 	if (APlayerController* PC = Cast<APlayerController>(GetController())) 
 	{
@@ -96,6 +102,21 @@ void ACharacterBase::Dead()
 	else if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
 		AIC->GetBrainComponent()->StopLogic("Dead");
+		return;
+	}
+}
+
+void ACharacterBase::EnableInputControl() 
+{
+	if (bIsDead) { return; } 
+	if (APlayerController* PC = Cast<APlayerController>(GetController())) 
+	{
+		PC->EnableInput(PC);
+		return;
+	}
+	else if (AAIController* AIC = Cast<AAIController>(GetController()))
+	{
+		AIC->GetBrainComponent()->RestartLogic();
 		return;
 	}
 }

@@ -32,6 +32,10 @@ public:
 	void AddGameplayTag(FGameplayTag& TagToAdd);
 	UFUNCTION(BlueprintCallable, Category="CharacterBase")
 	void RemoveGameplayTag(FGameplayTag& TagToRemove);
+	UFUNCTION(BlueprintCallable, Category="CharacterBase")
+	bool IsDead() { return bIsDead; }
+	UFUNCTION(BlueprintCallable, Category="CharacterBase")
+	void HitStun(float Duration);
 
 	// DELEGATE FUNCTIONS
 	UFUNCTION()
@@ -61,9 +65,12 @@ public:
 protected:
 	bool bIsDead = false;
 	uint8 TeamId;
+	FTimerHandle StunTimerHandle;
 
 	virtual void BeginPlay() override;
 	void AutoDetermineTeamIdByControllerType();
-	void Dead();
+	// void Dead();
+	void DisableInputControl();
+	void EnableInputControl();
 
 };
