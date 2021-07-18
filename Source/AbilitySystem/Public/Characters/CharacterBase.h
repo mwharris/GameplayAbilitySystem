@@ -27,6 +27,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="CharacterBase")
 	void AcquireAblity(TSubclassOf<UGameplayAbility> AbilityToAcquire);
 	UFUNCTION(BlueprintCallable, Category="CharacterBase")
+	void AcquireAblities(TArray<TSubclassOf<UGameplayAbility>> AbilitiesToAcquire);
+	UFUNCTION(BlueprintCallable, Category="CharacterBase")
 	bool IsOtherHostile(ACharacterBase* Other);
 	UFUNCTION(BlueprintCallable, Category="CharacterBase")
 	void AddGameplayTag(FGameplayTag& TagToAdd);
@@ -72,5 +74,6 @@ protected:
 	// void Dead();
 	void DisableInputControl();
 	void EnableInputControl();
+	void AddAbilityToUI(TSubclassOf<class UGameplayAbilityBase> AbilityToAdd);
 
 };

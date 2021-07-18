@@ -1,7 +1,9 @@
 #include "Characters/CharacterBase.h"
+#include "Abilities/GameplayAbilityBase.h"
 #include "AIController.h"
 #include "AttributeSets/AttributeSetBase.h"
 #include "BrainComponent.h"
+#include "Controllers/PlayerControllerBase.h"
 #include "GameFramework/PlayerController.h"
 
 ACharacterBase::ACharacterBase()
@@ -36,6 +38,24 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void ACharacterBase::AcquireAblities(TArray<TSubclassOf<UGameplayAbility>> AbilitiesToAcquire) 
+{
+	for (TSubclassOf<UGameplayAbility> AbilityToAcquire : AbilitiesToAcquire) 
+	{
+		AcquireAblity(AbilityToAcquire);
+		// Make sure this UGameplayAbility is a child of UGameplayAbilityBase
+		if (AbilityToAcquire->IsChildOf(UGameplayAbilityBase::StaticClass()))
+		{
+			// Dereference and add to the UI
+			TSubclassOf<UGameplayAbilityBase> AbilityBaseClass = *AbilityToAcquire;
+			if (AbilityBaseClass != nullptr)
+			{
+				AddAbilityToUI(AbilityBaseClass);
+			}
+		}
+	}
+}
+
 void ACharacterBase::AcquireAblity(TSubclassOf<UGameplayAbility> AbilityToAcquire) 
 {
 	if (!AbilitySystemComp) return;
@@ -51,6 +71,24 @@ void ACharacterBase::AcquireAblity(TSubclassOf<UGameplayAbility> AbilityToAcquir
 	// Argument 1 is OwnerActor (the actor that logically owns the component)
 	// Argument 2 is AvatarActor (what physical actor we are effecting in the world)
 	AbilitySystemComp->InitAbilityActorInfo(this, this);
+}
+
+void ACharacterBase::AddAbilityToUI(TSubclassOf<UGameplayAbilityBase> AbilityToAdd) 
+{
+	// Get a reference to our PlayerController
+	APlayerControllerBase* PlayerController = Cast<APlayerControllerBase>(GetController());
+	// Get a reference to the UGameplayAbilityBase wrapped by the TSubclassOf<>
+	UGameplayAbilityBase* AbilityBase = AbilityToAdd.Get()->GetDefaultObject<UGameplayAbilityBase>();
+	// Make sure both our references are valid before proceeding
+	if (PlayerController == nullptr || AbilityBase == nullptr) 
+	{
+		UE_LOG(LogTemp, Error, TEXT("ACharacterBase::AddAbilityToUI: Could not find PlayerControllerBase or AbilityBase!"));
+		return;
+	}
+	// Pull out our ability information for the UI
+	FGameplayAbilityInfo AbilityInfo = AbilityBase->GetAbilityInfo();
+	// Tell the PlayerController to add this information to the UI
+	PlayerController->AddAbilityToUI(AbilityInfo);
 }
 
 void ACharacterBase::AddGameplayTag(FGameplayTag& TagToAdd) 
