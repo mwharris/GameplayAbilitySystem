@@ -80,11 +80,7 @@ void ACharacterBase::AddAbilityToUI(TSubclassOf<UGameplayAbilityBase> AbilityToA
 	// Get a reference to the UGameplayAbilityBase wrapped by the TSubclassOf<>
 	UGameplayAbilityBase* AbilityBase = AbilityToAdd.Get()->GetDefaultObject<UGameplayAbilityBase>();
 	// Make sure both our references are valid before proceeding
-	if (PlayerController == nullptr || AbilityBase == nullptr) 
-	{
-		UE_LOG(LogTemp, Error, TEXT("ACharacterBase::AddAbilityToUI: Could not find PlayerControllerBase or AbilityBase!"));
-		return;
-	}
+	if (PlayerController == nullptr || AbilityBase == nullptr) { return; }
 	// Pull out our ability information for the UI
 	FGameplayAbilityInfo AbilityInfo = AbilityBase->GetAbilityInfo();
 	// Tell the PlayerController to add this information to the UI
