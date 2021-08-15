@@ -1,30 +1,42 @@
 #include "GATargetActorGroundSelect.h"
 #include "Abilities/GameplayAbility.h"
+#include "Components/DecalComponent.h"
+#include "Components/SceneComponent.h"
 #include "DrawDebugHelpers.h"
 #include "GameFramework/PlayerController.h"
 
 AGATargetActorGroundSelect::AGATargetActorGroundSelect() 
 {
     PrimaryActorTick.bCanEverTick = true;	
+    // Setup root scene component and decal
+    RootComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+    SetRootComponent(RootComp);
+    Decal = CreateDefaultSubobject<UDecalComponent>(TEXT("Decal"));
+    Decal->SetupAttachment(RootComp);
+    // Initialize radius
+    Radius = 200.0f;
 }
 
 void AGATargetActorGroundSelect::StartTargeting(UGameplayAbility* Ability)
 {
 	Super::StartTargeting(Ability);
+    // Cache references to the owner's PlayerController and Pawn
     MasterPC = Cast<APlayerController>(Ability->GetOwningActorFromActorInfo()->GetInstigatorController());
     MasterPawn = MasterPC->GetPawn();
     if (!MasterPawn) {
         UE_LOG(LogTemp, Error, TEXT("GATargetActorGoundSelect: Could not find Master Pawn!"));
     }
+    // Initialize decal size
+    Decal->DecalSize = FVector(Radius);
 }
 
 void AGATargetActorGroundSelect::Tick(float DeltaTime) 
 {
 	Super::Tick(DeltaTime);
-    // Constantly ddraw a debug sphere to visualize our targeting
+    // Draw a decal at the point the player is targeting
     FVector ViewPoint;
     GetPlayerLookPoint(ViewPoint);
-	DrawDebugSphere(GetWorld(), ViewPoint, Radius, 32, FColor::Red, false, -1, 0, 3.0f);
+    Decal->SetWorldLocation(ViewPoint);
 }
 
 void AGATargetActorGroundSelect::ConfirmTargetingAndContinue()
@@ -61,14 +73,21 @@ void AGATargetActorGroundSelect::ConfirmTargetingAndContinue()
             }
         }
     }
-    // Broadcast our targeting results and overlapped actors
+    // Create location information to add to the Target Data
+    FGameplayAbilityTargetData_LocationInfo* CenterLocation = new FGameplayAbilityTargetData_LocationInfo();
+    CenterLocation->TargetLocation.LocationType = EGameplayAbilityTargetingLocationType::LiteralTransform;
+    CenterLocation->TargetLocation.LiteralTransform = Decal->GetComponentTransform();
+    // Determine if we hit any actors
     if (OverlappedActors.Num() > 0) {
+        // Create an FGameplayAbilityTargetDataHandle with OverlappedActors as the data
         FGameplayAbilityTargetDataHandle TargetData = StartLocation.MakeTargetDataHandleFromActors(OverlappedActors);
+        TargetData.Add(CenterLocation);
+        // Perform the broadcast to trigger Wait Target Data blueprint
         TargetDataReadyDelegate.Broadcast(TargetData);
     }
     else
     {
-        TargetDataReadyDelegate.Broadcast(FGameplayAbilityTargetDataHandle());
+        TargetDataReadyDelegate.Broadcast(FGameplayAbilityTargetDataHandle(CenterLocation));
     }
 }
 

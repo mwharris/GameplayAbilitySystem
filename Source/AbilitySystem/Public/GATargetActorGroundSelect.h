@@ -12,7 +12,9 @@ class ABILITYSYSTEM_API AGATargetActorGroundSelect : public AGameplayAbilityTarg
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta=(ExposeOnSpawn=true), Category="Ground Select")
 	float Radius;
-		
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Ground Select")
+	class UDecalComponent* Decal;
+
 	UFUNCTION(BlueprintCallable, Category="Ground Select")
 	bool GetPlayerLookPoint(FVector& OutViewPoint);
 
@@ -23,5 +25,6 @@ public:
 
 private:
 	APawn* MasterPawn;
+	USceneComponent* RootComp;
 
 };
